@@ -34,6 +34,12 @@ fi
 [[ -n $FALLBACK ]] || { echo "error: no fallback theme found; pass --theme" >&2; exit 1; }
 [[ -d "$THEMES_DIR/$FALLBACK" ]] || { echo "error: no such theme: $FALLBACK" >&2; exit 1; }
 
+# Stop the watcher first, or it would flip the theme straight back.
+systemctl disable --now apple-boot-keep.path 2>/dev/null || true
+rm -f /etc/systemd/system/apple-boot-keep.path /etc/systemd/system/apple-boot-keep.service
+rm -rf /usr/local/lib/apple-boot
+systemctl daemon-reload
+
 echo "==> Switching back to: $FALLBACK"
 plymouth-set-default-theme "$FALLBACK"
 

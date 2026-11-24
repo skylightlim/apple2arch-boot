@@ -1,0 +1,9 @@
+[Unit]
+Description=Watch the Plymouth config for theme changes
+
+[Path]
+PathChanged=/etc/plymouth
+Unit=apple-boot-keep.service
+
+[Install]
+WantedBy=multi-user.target

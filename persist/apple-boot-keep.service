@@ -1,0 +1,6 @@
+[Unit]
+Description=Keep the apple Plymouth theme selected
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/lib/apple-boot/apple-boot-keep.sh

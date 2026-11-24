@@ -13,6 +13,7 @@ SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/theme"
 LOGO=""
 LOGO_MAX=256
 REBUILD=1
+PERSIST=1
 
 usage() {
   cat <<'USAGE'
@@ -24,6 +25,8 @@ Options:
                     fit --logo-size. Requires ImageMagick.
   --logo-size N     Max logo edge in pixels (default: 256). Plymouth draws the
                     logo at its native size, so this IS its on-screen size.
+  --no-persist      Do not install the watcher that re-selects this theme after
+                    Omarchy (or a package upgrade) switches it back.
   --no-rebuild      Install and select the theme, but skip the initramfs
                     rebuild. The theme will not appear until you rebuild.
   -h, --help        Show this help.
@@ -35,6 +38,7 @@ while (( $# )); do
     --logo)      LOGO="${2:?--logo needs a path}"; shift 2 ;;
     --logo-size) LOGO_MAX="${2:?--logo-size needs a number}"; shift 2 ;;
     --no-rebuild) REBUILD=0; shift ;;
+    --no-persist) PERSIST=0; shift ;;
     -h|--help)   usage; exit 0 ;;
     *) echo "unknown option: $1" >&2; usage >&2; exit 2 ;;
   esac
@@ -60,6 +64,16 @@ if [[ -n $LOGO ]]; then
   # single-colour logo to grayscale+alpha.
   "$IM" "$LOGO" -resize "${LOGO_MAX}x${LOGO_MAX}>" \
     -colorspace sRGB -type TrueColorAlpha "PNG32:$DEST/logo.png"
+fi
+
+if (( PERSIST )); then
+  echo "==> Installing the keep-selected watcher"
+  PSRC="$(dirname "$SRC")/persist"
+  install -d -m 755 /usr/local/lib/apple-boot
+  install -m 755 "$PSRC"/apple-boot-keep.sh /usr/local/lib/apple-boot/
+  install -m 644 "$PSRC"/apple-boot-keep.service "$PSRC"/apple-boot-keep.path /etc/systemd/system/
+  systemctl daemon-reload
+  systemctl enable --now apple-boot-keep.path
 fi
 
 echo "==> Selecting $THEME_NAME as the default theme"

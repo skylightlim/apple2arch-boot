@@ -21,6 +21,77 @@ logo.y = Math.Int(Window.GetHeight() * global.logo_center_ratio - logo.image.Get
 logo.sprite.SetPosition(logo.x, logo.y, 0);
 logo.sprite.SetOpacity(1);
 
+#----------------------------------------- Intro animation ---------------------------
+# The Apple logo holds for a moment (a seamless hand-off from the firmware
+# splash), power-flickers, then snap-cuts to the Arch logo with a short
+# double-vision glitch. Both logos share one centre, so the progress bar and
+# passphrase field below keep their place. On shutdown/reboot the Apple logo is
+# skipped and Arch is shown straight away.
+
+arch.image = Image("arch.png");
+arch.ghost_image = arch.image.Scale(Math.Int(arch.image.GetWidth() * 1.12), Math.Int(arch.image.GetHeight() * 1.12));
+arch.x = Math.Int(Window.GetWidth() / 2 - arch.image.GetWidth() / 2);
+arch.y = Math.Int(Window.GetHeight() * global.logo_center_ratio - arch.image.GetHeight() / 2);
+arch.ghost_x = Math.Int(Window.GetWidth() / 2 - arch.ghost_image.GetWidth() / 2);
+arch.ghost_y = Math.Int(Window.GetHeight() * global.logo_center_ratio - arch.ghost_image.GetHeight() / 2);
+
+arch.sprite = Sprite(arch.image);
+arch.sprite.SetPosition(arch.x, arch.y, 10);
+arch.sprite.SetOpacity(0);
+
+arch.ghost_left = Sprite(arch.ghost_image);
+arch.ghost_left.SetPosition(arch.ghost_x, arch.ghost_y, 9);
+arch.ghost_left.SetOpacity(0);
+
+arch.ghost_right = Sprite(arch.ghost_image);
+arch.ghost_right.SetPosition(arch.ghost_x, arch.ghost_y, 8);
+arch.ghost_right.SetOpacity(0);
+
+global.intro_frame = 0;
+global.intro_done = 0;
+
+if (Plymouth.GetMode() == "shutdown" || Plymouth.GetMode() == "reboot") {
+  logo.sprite.SetOpacity(0);
+  arch.sprite.SetOpacity(1);
+  global.intro_done = 1;
+}
+
+fun intro_step() {
+  global.intro_frame++;
+  f = global.intro_frame;
+
+  if (f == 21 || f == 22) logo.sprite.SetOpacity(0.25);
+  else if (f >= 23 && f <= 26) logo.sprite.SetOpacity(0.95);
+  else if (f == 27 || f == 28) logo.sprite.SetOpacity(0.75);
+  else if (f >= 29 && f <= 34) logo.sprite.SetOpacity(1);
+  else if (f == 35 || f == 36) logo.sprite.SetOpacity(0.6);
+  else if (f == 37 || f == 38) {
+    logo.sprite.SetOpacity(0);
+    arch.sprite.SetOpacity(1);
+  }
+  else if (f == 39 || f == 40) {
+    arch.sprite.SetPosition(arch.x - 3, arch.y, 10);
+    arch.ghost_left.SetPosition(arch.ghost_x - 14, arch.ghost_y - 4, 9);
+    arch.ghost_left.SetOpacity(0.55);
+    arch.ghost_right.SetPosition(arch.ghost_x + 12, arch.ghost_y + 4, 8);
+    arch.ghost_right.SetOpacity(0.45);
+  }
+  else if (f == 41 || f == 42) {
+    arch.sprite.SetPosition(arch.x + 2, arch.y, 10);
+    arch.ghost_left.SetPosition(arch.ghost_x + 10, arch.ghost_y - 3, 9);
+    arch.ghost_left.SetOpacity(0.45);
+    arch.ghost_right.SetPosition(arch.ghost_x - 10, arch.ghost_y + 2, 8);
+    arch.ghost_right.SetOpacity(0.35);
+  }
+  else if (f == 43) {
+    arch.sprite.SetPosition(arch.x, arch.y, 10);
+    arch.sprite.SetOpacity(1);
+    arch.ghost_left.SetOpacity(0);
+    arch.ghost_right.SetOpacity(0);
+    global.intro_done = 1;
+  }
+}
+
 # Use these to adjust the progress bar timing
 global.fake_progress_limit = 0.7;  # Target percentage for fake progress (0.0 to 1.0)
 global.fake_progress_duration = 15.0;  # Duration in seconds to reach limit
@@ -35,6 +106,8 @@ global.password_shown = 0;  # Track if password dialog has been shown
 global.max_progress = 0.0;  # Track the maximum progress reached to prevent backwards movement
 
 fun refresh_callback() {
+  if (global.intro_done == 0) intro_step();
+
   global.animation_frame++;
 
   # Animate fake progress to limit over time with easing

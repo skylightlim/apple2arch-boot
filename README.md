@@ -1,4 +1,10 @@
-# Apple Boot
+# Apple2Arch Boot
+
+> A variant of [apple-boot](https://github.com/skylightlim/apple-boot) that adds
+> an Apple → Arch Linux intro animation. The boot opens on the Apple logo, which
+> power-flickers and then snap-cuts to the Arch logo with a short double-vision
+> glitch. Everything else (passphrase field, progress bar, LUKS handling) is
+> unchanged.
 
 A Plymouth theme that turns a Linux boot into a Mac one: pure black, a white
 logo, a slim pill progress bar, and a FileVault-style passphrase field for
@@ -122,9 +128,19 @@ and the other follows.
 [@dhh](https://github.com/dhh), MIT licensed. The progress-callback structure
 and the fake-progress easing are theirs; the layout, assets and styling are not.
 
+### Apple → Arch animation
+
+The idea and the flicker/glitch sequence come from the
+[Plymouth apple2arch](https://www.reddit.com/r/unixporn/comments/tloxu8/plymouth_apple2arch/)
+post on r/unixporn by [u/thefudgeishot](https://www.reddit.com/user/thefudgeishot/).
+It is reimplemented here inside `theme/apple.script` so it coexists with the
+passphrase prompt and progress bar. Both logos share one centre, so the field and
+bar below keep their place. On shutdown/reboot the Apple logo is skipped and Arch
+is shown straight away.
+
 ## Trademark
 
-The Apple logo is a trademark of Apple Inc. This project is not affiliated with,
+The Apple logo is a trademark of Apple Inc., and the Arch Linux logo is a trademark of Arch Linux. This project is not affiliated with,
 endorsed by, or sponsored by Apple Inc. The bundled mark is here so the theme
 works out of the box for personal use — if that's a problem for yours, install
 with `--logo` and supply your own.
